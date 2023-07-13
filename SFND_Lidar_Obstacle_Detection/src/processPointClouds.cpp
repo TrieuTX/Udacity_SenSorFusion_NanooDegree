@@ -27,11 +27,45 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(
 
     // TODO:: Fill in the function to do voxel grid point reduction and region based filtering
 
+    // Reduce the number of points, increase the performance
+    typename pcl::PointCloud<PointT>::Ptr cloud_filtered(new pcl::PointCloud<PointT>);
+    pcl::VoxelGrid<PointT> vg;
+    vg.setInputCloud(cloud);
+    vg.setLeafSize(filterRes, filterRes, filterRes);
+    vg.filter(*cloud_filtered);
+
+    // Get the data in the required area, remove the distant points
+    typename pcl::PointCloud<PointT>::Ptr cloud_region(new pcl::PointCloud<PointT>);
+    pcl::CropBox<PointT> region(true);
+    region.setMin(minPoint);
+    region.setMax(maxPoint);
+    region.setInputCloud(cloud_filtered);
+    region.filter(*cloud_region);
+
+    // Get the indices of rooftop points
+    std::vector<int> indices;
+    pcl::CropBox<PointT> roofFilter(true);
+    roofFilter.setMin(Eigen::Vector4f(-1.5, -1.7, -1, 1));
+    roofFilter.setMax(Eigen::Vector4f(2.6, 1.7, -0.4, 1));
+    roofFilter.setInputCloud(cloud_region);
+    roofFilter.filter(indices);
+
+    pcl::PointIndices::Ptr inliers{new pcl::PointIndices};
+    for (int point : indices)
+        inliers->indices.push_back(point);
+
+    // Remove unnecessary data area, skip points on car roof
+    pcl::ExtractIndices<PointT> extract;
+    extract.setIndices(inliers);
+    extract.setNegative(true);
+    extract.setInputCloud(cloud_region);
+    extract.filter(*cloud_region);
+
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "filtering took " << elapsedTime.count() << " milliseconds" << std::endl;
 
-    return cloud;
+    return cloud_region;
 }
 
 template <typename PointT>
