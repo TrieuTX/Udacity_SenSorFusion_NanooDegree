@@ -89,4 +89,65 @@ struct KdTree
         searchHelper(target, root, 0, distanceTol, ids);
         return ids;
     }
+
+    // implement 3-dimensional k-d tree insert
+    void insertHelper3DTree(Node **node, uint depth, std::vector<float> point, int id)
+    {
+        if (*node == NULL)
+            *node = new Node(point, id);
+        else
+        {
+            uint cd = depth % 3;
+
+            if (point[cd] < ((*node)->point[cd]))
+                insertHelper3DTree((&(*node)->left), depth + 1, point, id);
+            else
+                insertHelper3DTree((&(*node)->right), depth + 1, point, id);
+        }
+    }
+
+    void insert3DTree(std::vector<float> point, int id)
+    {
+        // TODO: Fill in this function to insert a new point into the tree
+        // the function should create a new node and place correctly with in the root
+        insertHelper3DTree(&root, 0, point, id);
+    }
+
+    // implement 3-dimensional k-d tree search
+    void searchHelper3DTree(std::vector<float> target, Node *node, int depth, float distanceTol, std::vector<int> &ids)
+    {
+
+        if (node != NULL)
+        {
+            if ((node->point[0] >= (target[0] - distanceTol)) && (node->point[0] <= (target[0] + distanceTol)) &&
+                (node->point[1] >= (target[1] - distanceTol)) && (node->point[1] <= (target[1] + distanceTol)) &&
+                (node->point[2] >= (target[2] - distanceTol)) && (node->point[2] <= (target[2] + distanceTol)))
+            {
+                float distance = sqrt((node->point[0] - target[0]) * (node->point[0] - target[0]) +
+                                      (node->point[1] - target[1]) * (node->point[1] - target[1]) +
+                                      (node->point[2] - target[2]) * (node->point[2] - target[2]));
+                if (distance <= distanceTol)
+                {
+                    ids.push_back(node->id);
+                }
+            }
+
+            if ((target[depth % 3] - distanceTol) < node->point[depth % 3])
+            {
+                searchHelper3DTree(target, node->left, depth + 1, distanceTol, ids);
+            }
+            if ((target[depth % 3] + distanceTol) > node->point[depth % 3])
+            {
+                searchHelper3DTree(target, node->right, depth + 1, distanceTol, ids);
+            }
+        }
+    }
+
+    // return a list of point ids in the tree that are within distance of target
+    std::vector<int> searchK3dTree(std::vector<float> target, float distanceTol)
+    {
+        std::vector<int> ids;
+        searchHelper3DTree(target, root, 0, distanceTol, ids);
+        return ids;
+    }
 };
