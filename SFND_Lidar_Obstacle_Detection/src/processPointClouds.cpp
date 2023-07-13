@@ -128,6 +128,82 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 }
 
 template <typename PointT>
+std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<
+    PointT>::SegmentPlaneWithRANSAC(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations,
+                                    float distanceThreshold)
+{
+    pcl::PointIndices::Ptr inliersResult(new pcl::PointIndices);
+    srand(time(NULL));
+
+    // TODO: Fill in this function
+
+    // For max iterations
+
+    // Randomly sample subset and fit line
+
+    // Measure distance between every point and fitted line
+
+    // If distance is smaller than threshold count it as inlier
+
+    // Return indicies of inliers from fitted line with most inliers
+
+    while (maxIterations--)
+    {
+        pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+
+        PointT point1 = cloud->points.at(rand() % (cloud->points.size()));
+        PointT point2 = cloud->points.at(rand() % (cloud->points.size()));
+        PointT point3 = cloud->points.at(rand() % (cloud->points.size()));
+        // three points 3d
+        float x1, y1, z1, x2, y2, z2, x3, y3, z3;
+
+        x1 = point1.x;
+        y1 = point1.y;
+        z1 = point1.z;
+        x2 = point2.x;
+        y2 = point2.y;
+        z2 = point2.z;
+        x3 = point3.x;
+        y3 = point3.y;
+        z3 = point3.z;
+
+        float A = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
+        float B = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
+        float C = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+        float D = -(A * x1 + B * y1 + C * z1);
+
+        for (int index = 0; index < cloud->points.size(); index++)
+        {
+            PointT point = cloud->points[index];
+            if (point.x == point1.x && point.y == point1.y && point.z == point1.z)
+                continue;
+            if (point.x == point2.x && point.y == point2.y && point.z == point2.z)
+                continue;
+            if (point.x == point3.x && point.y == point3.y && point.z == point3.z)
+                continue;
+
+            // PointT point = cloud->points[index];
+
+            float x4 = point.x;
+            float y4 = point.y;
+            float z4 = point.z;
+
+            float distance = fabs(A * x4 + B * y4 + C * z4 + D) / sqrt(A * A + B * B + C * C);
+            if (distance <= distanceThreshold)
+                inliers->indices.push_back(index);
+        }
+
+        if (inliers->indices.size() > inliersResult->indices.size())
+        {
+            inliersResult = inliers;
+        }
+    }
+    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult =
+        SeparateClouds(inliersResult, cloud);
+    return segResult;
+}
+
+template <typename PointT>
 std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::Clustering(
     typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize)
 {
