@@ -3,6 +3,7 @@
 #ifndef PROCESSPOINTCLOUDS_H_
 #define PROCESSPOINTCLOUDS_H_
 
+#include "quiz/cluster/kdtree.h"
 #include "render/box.h"
 #include <chrono>
 #include <ctime>
@@ -42,6 +43,13 @@ template <typename PointT> class ProcessPointClouds
 
     std::vector<typename pcl::PointCloud<PointT>::Ptr> Clustering(typename pcl::PointCloud<PointT>::Ptr cloud,
                                                                   float clusterTolerance, int minSize, int maxSize);
+
+    void ClusterHelper(int indice, typename pcl::PointCloud<PointT>::Ptr cloud,
+                       typename pcl::PointCloud<PointT>::Ptr cluster, std::vector<bool> &processed, KdTree *tree,
+                       float clusterTolerance);
+    std::vector<typename pcl::PointCloud<PointT>::Ptr> EuclideanCluster(typename pcl::PointCloud<PointT>::Ptr cloud,
+                                                                        float clusterTolerance, int minSize,
+                                                                        int maxSize);
 
     Box BoundingBox(typename pcl::PointCloud<PointT>::Ptr cluster);
 

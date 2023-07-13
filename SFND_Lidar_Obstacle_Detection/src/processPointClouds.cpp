@@ -249,6 +249,65 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
     return clusters;
 }
 
+template <typename PointT>
+void ProcessPointClouds<PointT>::ClusterHelper(int indice, typename pcl::PointCloud<PointT>::Ptr cloud,
+                                               typename pcl::PointCloud<PointT>::Ptr cluster,
+                                               std::vector<bool> &processed, KdTree *tree, float clusterTolerance)
+{
+    processed[indice] = true;
+
+    PointT point = cloud->points[indice];
+    cluster->push_back(point);
+
+    std::vector<float> vector_point;
+    vector_point.push_back(point.x);
+    vector_point.push_back(point.y);
+    vector_point.push_back(point.z);
+
+    std::vector<int> nearest = tree->search3DTree(vector_point, clusterTolerance);
+    for (int id : nearest)
+    {
+        if (!processed[id])
+        {
+            ClusterHelper(id, cloud, cluster, processed, tree, clusterTolerance);
+        }
+    }
+}
+
+template <typename PointT>
+std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::EuclideanCluster(
+    typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize)
+{
+
+    KdTree *tree = new KdTree;
+    for (int i = 0; i < cloud->points.size(); i++)
+    {
+        PointT point = cloud->points[i];
+        std::vector<float> vector_point;
+        vector_point.push_back(point.x);
+        vector_point.push_back(point.y);
+        vector_point.push_back(point.z);
+        // tree->insert(vector_point, i);
+        tree->insert3DTree(vector_point, i);
+    }
+    std::vector<bool> processed(cloud->points.size(), false);
+    std::vector<typename pcl::PointCloud<PointT>::Ptr> clusters;
+    for (int i = 0; i < cloud->points.size(); i++)
+    {
+        if (processed[i])
+        {
+            continue;
+        }
+        typename pcl::PointCloud<PointT>::Ptr cluster(new pcl::PointCloud<PointT>);
+        ClusterHelper(i, cloud, cluster, processed, tree, clusterTolerance);
+        if ((cluster->size() >= minSize) && (cluster->size() <= maxSize))
+        {
+            clusters.push_back(cluster);
+        }
+    }
+    return clusters;
+}
+
 template <typename PointT> Box ProcessPointClouds<PointT>::BoundingBox(typename pcl::PointCloud<PointT>::Ptr cluster)
 {
 
