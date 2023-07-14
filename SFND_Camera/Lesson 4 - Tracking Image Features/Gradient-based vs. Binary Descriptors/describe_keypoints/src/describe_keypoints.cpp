@@ -1,9 +1,9 @@
 #include <iostream>
 #include <numeric>
 #include <opencv2/core.hpp>
+#include <opencv2/features2d.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/features2d.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/xfeatures2d/nonfree.hpp>
 
@@ -40,11 +40,10 @@ void descKeypoints1()
     imshow(windowName, visImage);
     cv::waitKey(0);
 
-    // TODO: Add the SIFT detector / descriptor, compute the 
+    // TODO: Add the SIFT detector / descriptor, compute the
     // time for both steps and compare both BRISK and SIFT
-    // with regard to processing speed and the number and 
+    // with regard to processing speed and the number and
     // visual appearance of keypoints.
-
 }
 
 int main()

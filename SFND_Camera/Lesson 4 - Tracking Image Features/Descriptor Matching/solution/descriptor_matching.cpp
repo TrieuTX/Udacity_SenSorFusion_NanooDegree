@@ -1,16 +1,17 @@
 #include <iostream>
 #include <numeric>
 #include <opencv2/core.hpp>
+#include <opencv2/features2d.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/features2d.hpp>
 
 #include "structIO.hpp"
 
 using namespace std;
 
-void matchDescriptors(cv::Mat &imgSource, cv::Mat &imgRef, vector<cv::KeyPoint> &kPtsSource, vector<cv::KeyPoint> &kPtsRef, cv::Mat &descSource, cv::Mat &descRef,
-                      vector<cv::DMatch> &matches, string descriptorType, string matcherType, string selectorType)
+void matchDescriptors(cv::Mat &imgSource, cv::Mat &imgRef, vector<cv::KeyPoint> &kPtsSource,
+                      vector<cv::KeyPoint> &kPtsRef, cv::Mat &descSource, cv::Mat &descRef, vector<cv::DMatch> &matches,
+                      string descriptorType, string matcherType, string selectorType)
 {
 
     // configure matcher
@@ -27,7 +28,8 @@ void matchDescriptors(cv::Mat &imgSource, cv::Mat &imgRef, vector<cv::KeyPoint> 
     else if (matcherType.compare("MAT_FLANN") == 0)
     {
         if (descSource.type() != CV_32F)
-        { // OpenCV bug workaround : convert binary descriptors to floating point due to a bug in current OpenCV implementation
+        { // OpenCV bug workaround : convert binary descriptors to floating point due to a bug in current OpenCV
+          // implementation
             descSource.convertTo(descSource, CV_32F);
             descRef.convertTo(descRef, CV_32F);
         }
@@ -71,8 +73,8 @@ void matchDescriptors(cv::Mat &imgSource, cv::Mat &imgRef, vector<cv::KeyPoint> 
 
     // visualize results
     cv::Mat matchImg = imgRef.clone();
-    cv::drawMatches(imgSource, kPtsSource, imgRef, kPtsRef, matches,
-                    matchImg, cv::Scalar::all(-1), cv::Scalar::all(-1), vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    cv::drawMatches(imgSource, kPtsSource, imgRef, kPtsRef, matches, matchImg, cv::Scalar::all(-1), cv::Scalar::all(-1),
+                    vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
     string windowName = "Matching keypoints between two camera images (best 50)";
     cv::namedWindow(windowName, 7);
@@ -85,17 +87,18 @@ int main()
     cv::Mat imgSource = cv::imread("../images/img1gray.png");
     cv::Mat imgRef = cv::imread("../images/img2gray.png");
 
-    vector<cv::KeyPoint> kptsSource, kptsRef; 
+    vector<cv::KeyPoint> kptsSource, kptsRef;
     readKeypoints("../dat/C35A5_KptsSource_BRISK_large.dat", kptsSource);
     readKeypoints("../dat/C35A5_KptsRef_BRISK_large.dat", kptsRef);
 
-    cv::Mat descSource, descRef; 
+    cv::Mat descSource, descRef;
     readDescriptors("../dat/C35A5_DescSource_BRISK_large.dat", descSource);
     readDescriptors("../dat/C35A5_DescRef_BRISK_large.dat", descRef);
 
     vector<cv::DMatch> matches;
-    string matcherType = "MAT_BF"; // MAT_BF, MAT_FLANN
+    string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
     string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
-    string selectorType = "SEL_NN"; // SEL_NN, SEL_KNN
-    matchDescriptors(imgSource, imgRef, kptsSource, kptsRef, descSource, descRef, matches, descriptorType, matcherType, selectorType);
+    string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
+    matchDescriptors(imgSource, imgRef, kptsSource, kptsRef, descSource, descRef, matches, descriptorType, matcherType,
+                     selectorType);
 }

@@ -1,9 +1,9 @@
 #include <iostream>
 #include <numeric>
 #include <opencv2/core.hpp>
+#include <opencv2/features2d.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/features2d.hpp>
 
 using namespace std;
 
@@ -33,11 +33,10 @@ void cornernessHarris()
     cv::imshow(windowName, dst_norm_scaled);
     cv::waitKey(0);
 
-    // TODO: Your task is to locate local maxima in the Harris response matrix 
-    // and perform a non-maximum suppression (NMS) in a local neighborhood around 
-    // each maximum. The resulting coordinates shall be stored in a list of keypoints 
+    // TODO: Your task is to locate local maxima in the Harris response matrix
+    // and perform a non-maximum suppression (NMS) in a local neighborhood around
+    // each maximum. The resulting coordinates shall be stored in a list of keypoints
     // of the type `vector<cv::KeyPoint>`.
-
 }
 
 int main()

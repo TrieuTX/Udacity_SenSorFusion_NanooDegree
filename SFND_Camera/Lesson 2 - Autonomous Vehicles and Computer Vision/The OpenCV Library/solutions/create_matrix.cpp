@@ -2,7 +2,6 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
-
 using namespace std;
 
 void createMatrix1()
@@ -33,7 +32,6 @@ void createMatrix1()
     cv::imshow(windowName, m3_8u);
     cv::waitKey(0); // wait for keyboard input before continuing
 }
-
 
 int main()
 {

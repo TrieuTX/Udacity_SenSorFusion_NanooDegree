@@ -1,9 +1,9 @@
 #include <iostream>
 #include <numeric>
 #include <opencv2/core.hpp>
+#include <opencv2/features2d.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/features2d.hpp>
 
 using namespace std;
 
@@ -67,7 +67,7 @@ void cornernessHarris()
                     }
                 }
                 if (!bOverlap)
-                {                                     // only add new key point if no overlap has been found in previous NMS
+                { // only add new key point if no overlap has been found in previous NMS
                     keypoints.push_back(newKeyPoint); // store new keypoint in dynamic list
                 }
             }
@@ -78,7 +78,8 @@ void cornernessHarris()
     windowName = "Harris Corner Detection Results";
     cv::namedWindow(windowName, 5);
     cv::Mat visImage = dst_norm_scaled.clone();
-    cv::drawKeypoints(dst_norm_scaled, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    cv::drawKeypoints(dst_norm_scaled, keypoints, visImage, cv::Scalar::all(-1),
+                      cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
     cv::imshow(windowName, visImage);
     cv::waitKey(0);
     // EOF STUDENT CODE

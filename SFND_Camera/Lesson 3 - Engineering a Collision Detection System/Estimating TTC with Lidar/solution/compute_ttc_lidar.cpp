@@ -2,14 +2,12 @@
 #include <numeric>
 #include <opencv2/core.hpp>
 
-
 #include "dataStructures.h"
 #include "structIO.hpp"
 
 using namespace std;
 
-void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
-                     std::vector<LidarPoint> &lidarPointsCurr, double &TTC)
+void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev, std::vector<LidarPoint> &lidarPointsCurr, double &TTC)
 {
     // auxiliary variables
     double dT = 0.1;        // time between two measurements in seconds
@@ -19,7 +17,7 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
     double minXPrev = 1e9, minXCurr = 1e9;
     for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
     {
-        
+
         if (abs(it->y) <= laneWidth / 2.0)
         { // 3D point within ego lane?
             minXPrev = minXPrev > it->x ? it->x : minXPrev;
@@ -45,7 +43,6 @@ int main()
     std::vector<LidarPoint> currLidarPts, prevLidarPts;
     readLidarPts("../dat/C22A5_currLidarPts.dat", currLidarPts);
     readLidarPts("../dat/C22A5_prevLidarPts.dat", prevLidarPts);
-
 
     double ttc;
     computeTTCLidar(prevLidarPts, currLidarPts, ttc);

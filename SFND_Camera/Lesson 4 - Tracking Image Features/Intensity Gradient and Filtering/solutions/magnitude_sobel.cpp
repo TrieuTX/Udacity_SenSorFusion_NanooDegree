@@ -40,8 +40,8 @@ void magnitudeSobel()
     {
         for (int c = 0; c < magnitude.cols; c++)
         {
-            magnitude.at<unsigned char>(r, c) = sqrt(pow(result_x.at<unsigned char>(r, c), 2) +
-                                                     pow(result_y.at<unsigned char>(r, c), 2));
+            magnitude.at<unsigned char>(r, c) =
+                sqrt(pow(result_x.at<unsigned char>(r, c), 2) + pow(result_y.at<unsigned char>(r, c), 2));
         }
     }
 

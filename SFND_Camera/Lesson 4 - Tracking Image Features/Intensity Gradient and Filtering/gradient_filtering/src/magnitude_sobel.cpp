@@ -24,11 +24,9 @@ void magnitudeSobel()
 
     // apply filter using the OpenCv function filter2D()
     // ToDo : Add your code here
-    
 
-    // compute magnitude image based on the equation presented in the lesson 
+    // compute magnitude image based on the equation presented in the lesson
     // ToDo : Add your code here
-    
 
     // show result
     string windowName = "Gaussian Blurring";
