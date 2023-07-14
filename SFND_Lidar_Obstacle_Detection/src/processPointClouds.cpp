@@ -150,22 +150,40 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     while (maxIterations--)
     {
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+        // PointT point1 = cloud->points.at(rand() % (cloud->points.size()));
+        // PointT point2 = cloud->points.at(rand() % (cloud->points.size()));
+        // PointT point3 = cloud->points.at(rand() % (cloud->points.size()));
+        std::unordered_set<int> indices;
+        while (indices.size() < 3)
+        {
+            indices.insert(rand() % (cloud->points.size()));
+        }
 
-        PointT point1 = cloud->points.at(rand() % (cloud->points.size()));
-        PointT point2 = cloud->points.at(rand() % (cloud->points.size()));
-        PointT point3 = cloud->points.at(rand() % (cloud->points.size()));
         // three points 3d
         float x1, y1, z1, x2, y2, z2, x3, y3, z3;
 
-        x1 = point1.x;
-        y1 = point1.y;
-        z1 = point1.z;
-        x2 = point2.x;
-        y2 = point2.y;
-        z2 = point2.z;
-        x3 = point3.x;
-        y3 = point3.y;
-        z3 = point3.z;
+        auto itr = indices.begin();
+        x1 = cloud->points[*itr].x;
+        y1 = cloud->points[*itr].y;
+        z1 = cloud->points[*itr].z;
+        itr++;
+        x2 = cloud->points[*itr].x;
+        y2 = cloud->points[*itr].y;
+        z2 = cloud->points[*itr].z;
+        itr++;
+        x3 = cloud->points[*itr].x;
+        y3 = cloud->points[*itr].y;
+        z3 = cloud->points[*itr].z;
+
+        // x1 = point1.x;
+        // y1 = point1.y;
+        // z1 = point1.z;
+        // x2 = point2.x;
+        // y2 = point2.y;
+        // z2 = point2.z;
+        // x3 = point3.x;
+        // y3 = point3.y;
+        // z3 = point3.z;
 
         float A = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
         float B = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
@@ -175,11 +193,18 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
         for (int index = 0; index < cloud->points.size(); index++)
         {
             PointT point = cloud->points[index];
-            if (point.x == point1.x && point.y == point1.y && point.z == point1.z)
+            // if (point.x == point1.x && point.y == point1.y && point.z == point1.z)
+            //     continue;
+            // if (point.x == point2.x && point.y == point2.y && point.z == point2.z)
+            //     continue;
+            // if (point.x == point3.x && point.y == point3.y && point.z == point3.z)
+            //     continue;
+
+            if (point.x == x1 && point.y == y1 && point.z == z1)
                 continue;
-            if (point.x == point2.x && point.y == point2.y && point.z == point2.z)
+            if (point.x == x2 && point.y == y2 && point.z == z2)
                 continue;
-            if (point.x == point3.x && point.y == point3.y && point.z == point3.z)
+            if (point.x == x3 && point.y == y3 && point.z == z3)
                 continue;
 
             // PointT point = cloud->points[index];
@@ -259,10 +284,7 @@ void ProcessPointClouds<PointT>::ClusterHelper(int indice, typename pcl::PointCl
     PointT point = cloud->points[indice];
     cluster->push_back(point);
 
-    std::vector<float> vector_point;
-    vector_point.push_back(point.x);
-    vector_point.push_back(point.y);
-    vector_point.push_back(point.z);
+    std::vector<float> vector_point{point.x, point.y, point.z};
 
     std::vector<int> nearest = tree->search3DTree(vector_point, clusterTolerance);
     for (int id : nearest)
@@ -283,10 +305,7 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::E
     for (int i = 0; i < cloud->points.size(); i++)
     {
         PointT point = cloud->points[i];
-        std::vector<float> vector_point;
-        vector_point.push_back(point.x);
-        vector_point.push_back(point.y);
-        vector_point.push_back(point.z);
+        std::vector<float> vector_point{point.x, point.y, point.z};
         // tree->insert(vector_point, i);
         tree->insert3DTree(vector_point, i);
     }
