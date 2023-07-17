@@ -20,7 +20,7 @@ void magnitudeSobel()
     // ToDo : Add your code here
 
     cv::Mat img_blurred = imgGray.clone();
-    cv::GaussianBlur(imgGray, img_blurred, cv::Size(5, 5), 0);
+    cv::GaussianBlur(imgGray, img_blurred, cv::Size(5, 5), 2);
 
     // cv::Mat img_blurred3x3;
     // cv::GaussianBlur(imgGray, img_blurred3x3, cv::Size(3, 3), 0);
