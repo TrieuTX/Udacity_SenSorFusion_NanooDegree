@@ -39,7 +39,7 @@ int main(int argc, const char *argv[])
     int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
-
+    int count_number_keypoint = 0;
     /* MAIN LOOP OVER ALL IMAGES */
 
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
@@ -74,7 +74,6 @@ int main(int argc, const char *argv[])
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
         string detectorType = "SHITOMASI";
-
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection
         /// based on detectorType / -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
@@ -109,6 +108,7 @@ int main(int argc, const char *argv[])
             }
             // countAll = countAll + keypoints.size();
             keypoints = croppedKeypoints;
+            count_number_keypoint += keypoints.size();
         }
 
         //// EOF STUDENT ASSIGNMENT
@@ -175,25 +175,26 @@ int main(int argc, const char *argv[])
             cout << "#4 : MATCH KEYPOINT DESCRIPTORS done" << endl;
 
             // visualize matches between current and previous image
-            bVis = true;
-            if (bVis)
-            {
-                cv::Mat matchImg = ((dataBuffer.end() - 1)->cameraImg).clone();
-                cv::drawMatches((dataBuffer.end() - 2)->cameraImg, (dataBuffer.end() - 2)->keypoints,
-                                (dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->keypoints, matches, matchImg,
-                                cv::Scalar::all(-1), cv::Scalar::all(-1), vector<char>(),
-                                cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+            // bVis = true;
+            // if (bVis)
+            // {
+            //     cv::Mat matchImg = ((dataBuffer.end() - 1)->cameraImg).clone();
+            //     cv::drawMatches((dataBuffer.end() - 2)->cameraImg, (dataBuffer.end() - 2)->keypoints,
+            //                     (dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->keypoints, matches,
+            //                     matchImg, cv::Scalar::all(-1), cv::Scalar::all(-1), vector<char>(),
+            //                     cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-                string windowName = "Matching keypoints between two camera images";
-                cv::namedWindow(windowName, 7);
-                cv::imshow(windowName, matchImg);
-                cout << "Press key to continue to next image" << endl;
-                cv::waitKey(0); // wait for key to be pressed
-            }
-            bVis = false;
+            //     string windowName = "Matching keypoints between two camera images";
+            //     cv::namedWindow(windowName, 7);
+            //     cv::imshow(windowName, matchImg);
+            //     cout << "Press key to continue to next image" << endl;
+            //     cv::waitKey(0); // wait for key to be pressed
+            // }
+            // bVis = false;
         }
 
     } // eof loop over all images
-
+    cout << "Count the number of keypoints on the preceding vehicle for all 10 images: " << count_number_keypoint
+         << endl;
     return 0;
 }

@@ -41,3 +41,15 @@ Then, add *C:\vcpkg\installed\x64-windows\bin* and *C:\vcpkg\installed\x64-windo
 2. Make a build directory in the top level directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
 4. Run it: `./2D_feature_tracking`.
+#### **TASK MP.7**
+Your seventh task is to count the number of keypoints on the preceding vehicle for all 10 images and take note of the distribution of their neighborhood size. Do this for all the detectors you have implemented.
+
+| Detector      | Number of Keypoints        |
+| ------------- | -------------------------- |
+| **SHITOMASI** | 1179                       |
+| **HARRIS**    | 248                        |
+| **FAST**      | 1491                       |
+| **BRISK**     | 2762                       |
+| **ORB**       | 1161                       |
+| **AKAZE**     | 1670                       |
+| **SIFT**      | 1386                       |
