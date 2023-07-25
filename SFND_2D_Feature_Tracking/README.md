@@ -53,3 +53,16 @@ Your seventh task is to count the number of keypoints on the preceding vehicle f
 | **ORB**       | 1161                       |
 | **AKAZE**     | 1670                       |
 | **SIFT**      | 1386                       |
+
+#### **TASK MP.8**
+Your eighth task is to count the number of matched keypoints for all 10 images using all possible combinations of detectors and descriptors. In the matching step, use the BF approach with the descriptor distance ratio set to 0.8.
+
+| Detector\Descriptor | BRISK | BRIEF | ORB | FREAK | AKAZE | SIFT |
+| --- | --- | --- |--- |--- |--- |--- |
+| **SHITOMASI** | 767 | 944 |907|768|N/A|N/A|
+| **HARRIS** | 142|173|160|144|N/A|N/A|
+| **FAST** | 899 |1099|1081|878|N/A|N/A|
+| **BRISK** | 1570 |1704|1510|1524|N/A|N/A|
+| **ORB** | 751 |545|761|420|N/A|N/A|
+| **AKAZE** | 1215 |1266|1186|1187|1259|N/A|
+| **SIFT** | 592 |702|N/A|593|N/A|N/A|
