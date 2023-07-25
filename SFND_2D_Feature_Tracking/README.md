@@ -66,3 +66,23 @@ Your eighth task is to count the number of matched keypoints for all 10 images u
 | **ORB** | 751 |545|761|420|N/A|N/A|
 | **AKAZE** | 1215 |1266|1186|1187|1259|N/A|
 | **SIFT** | 592 |702|N/A|593|N/A|N/A|
+
+#### **TASK MP.9**
+Your ninth task is to log the time it takes for keypoint detection and descriptor extraction. The results must be entered into a spreadsheet and based on this information you will then suggest the TOP3 detector / descriptor combinations as the best choice for our purpose of detecting keypoints on vehicles. Finally, in a short text, please justify your recommendation based on your observations and on the data you collected.
+
+| Detector\Descriptor | BRISK | BRIEF | ORB | FREAK | AKAZE | SIFT |
+| --- | --- | --- |--- |--- |--- |--- |
+| **SHITOMASI** | 144.301 |145.187 |146.714|508.543|N/A|N/A|
+| **HARRIS** | 145.435|163.349|179.998|403.676| N/A |N/A|
+| **FAST** | 24.1113 |15.6447|41.0496|324.599|N/A|N/A|
+| **BRISK** | 373.145 |347.023|434.01|620.562|N/A|N/A|
+| **ORB** | 82.7799|68.3624|163.302|348.231|N/A|N/A|
+| **AKAZE** | 539.141 |511.956|682.993|786.982|1017.64|N/A|
+| **SIFT** | 1100.64 |1122.2|N/A|1458.2|N/A|N/A|
+
+#### **Top Three Detector/Descriptor Combinations:**
+Detector/Descriptor  | Number of Matched Keypoints | Processing Time |
+-------------------- | --------------------------- | --------------- |
+**FAST+BRIEF**           | 1099 keypoints              | 15.6447 ms      |
+**FAST+BRISK**           | 899 keypoints               | 24.1113 ms      |
+**FAST+ORB**             | 1081 keypoints              | 41.0496 ms      |

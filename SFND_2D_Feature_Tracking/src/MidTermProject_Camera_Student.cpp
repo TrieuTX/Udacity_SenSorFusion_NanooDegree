@@ -46,7 +46,7 @@ int main(int argc, const char *argv[])
         0; // count the number of matched keypoints for all 10 images using all possible combinations of detectors and
            // descriptors. In the matching step, use the BF approach with the descriptor distance ratio set to 0.8.
     /* MAIN LOOP OVER ALL IMAGES */
-
+    double count_time = 0; // log the time it takes for keypoint detection and descriptor extraction.
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
     {
         /* LOAD IMAGE INTO BUFFER */
@@ -82,19 +82,20 @@ int main(int argc, const char *argv[])
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection
         /// based on detectorType / -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
-
+        double t = 0;
         if (detectorType.compare("SHITOMASI") == 0)
         {
-            detKeypointsShiTomasi(keypoints, imgGray, false);
+            t = detKeypointsShiTomasi(keypoints, imgGray, false);
         }
         else if (detectorType.compare("HARRIS") == 0)
         {
-            detKeypointsHarris(keypoints, imgGray, false);
+            t = detKeypointsHarris(keypoints, imgGray, false);
         }
         else
         {
-            detKeypointsModern(keypoints, imgGray, detectorType, false);
+            t = detKeypointsModern(keypoints, imgGray, detectorType, false);
         }
+        count_time += t;
         //// EOF STUDENT ASSIGNMENT
 
         //// STUDENT ASSIGNMENT
@@ -143,9 +144,11 @@ int main(int argc, const char *argv[])
         /// on descriptorType / -> BRIEF, ORB, FREAK, AKAZE, SIFT
 
         cv::Mat descriptors;
+        double time = 0;
         string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors,
-                      descriptorType);
+        time = descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors,
+                             descriptorType);
+        count_time += time;
         //// EOF STUDENT ASSIGNMENT
 
         // push descriptors for current frame to end of data buffer
@@ -204,5 +207,7 @@ int main(int argc, const char *argv[])
     cout << "Count the number of matched keypoints for all 10 images using all possible combinations of detectors and "
             "descriptors. In the matching step, use the BF approach with the descriptor distance ratio set to 0.8: "
          << count_number_keypoint_afterUsingDetectorsAndDescriptors << endl;
+    cout << "Time it takes for keypoint detection and descriptor extraction: " << count_time << " ms" << endl;
+
     return 0;
 }
