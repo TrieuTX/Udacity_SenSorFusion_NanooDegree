@@ -95,9 +95,16 @@ int main(int argc, const char *argv[])
         // only keep keypoints on the preceding vehicle
         bool bFocusOnVehicle = true;
         cv::Rect vehicleRect(535, 180, 180, 150);
+        vector<cv::KeyPoint> croppedKeypoints;
         if (bFocusOnVehicle)
         {
-            // ...
+            for (auto it = keypoints.begin(); it != keypoints.end(); ++it) // cycle through keypoints
+            {
+                if (vehicleRect.contains((*it).pt))
+                    croppedKeypoints.push_back(*it);
+            }
+            // countAll = countAll + keypoints.size();
+            keypoints = croppedKeypoints;
         }
 
         //// EOF STUDENT ASSIGNMENT
