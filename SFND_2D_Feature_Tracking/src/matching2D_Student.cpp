@@ -102,6 +102,7 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
         imshow(windowName, visImage);
         cv::waitKey(0);
     }
+    // return 1000 * t / 1.0;
 }
 void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis)
 {
@@ -170,6 +171,7 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
         cv::imshow(windowName, visImage);
         cv::waitKey(0);
     }
+    // return 1000 * t / 1.0;
 }
 void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std::string detectorType, bool bVis)
 {
@@ -220,4 +222,5 @@ void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std:
         cv::imshow(windowName, visImage);
         cv::waitKey(0);
     }
+    // return 1000 * t / 1.0;
 }
