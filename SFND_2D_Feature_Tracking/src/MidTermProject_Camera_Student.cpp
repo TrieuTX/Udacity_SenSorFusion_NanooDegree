@@ -183,22 +183,22 @@ int main(int argc, const char *argv[])
             cout << "#4 : MATCH KEYPOINT DESCRIPTORS done" << endl;
 
             // visualize matches between current and previous image
-            // bVis = true;
-            // if (bVis)
-            // {
-            //     cv::Mat matchImg = ((dataBuffer.end() - 1)->cameraImg).clone();
-            //     cv::drawMatches((dataBuffer.end() - 2)->cameraImg, (dataBuffer.end() - 2)->keypoints,
-            //                     (dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->keypoints, matches,
-            //                     matchImg, cv::Scalar::all(-1), cv::Scalar::all(-1), vector<char>(),
-            //                     cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+            bVis = true;
+            if (bVis)
+            {
+                cv::Mat matchImg = ((dataBuffer.end() - 1)->cameraImg).clone();
+                cv::drawMatches((dataBuffer.end() - 2)->cameraImg, (dataBuffer.end() - 2)->keypoints,
+                                (dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->keypoints, matches, matchImg,
+                                cv::Scalar::all(-1), cv::Scalar::all(-1), vector<char>(),
+                                cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-            //     string windowName = "Matching keypoints between two camera images";
-            //     cv::namedWindow(windowName, 7);
-            //     cv::imshow(windowName, matchImg);
-            //     cout << "Press key to continue to next image" << endl;
-            //     cv::waitKey(0); // wait for key to be pressed
-            // }
-            // bVis = false;
+                string windowName = "Matching keypoints between two camera images";
+                cv::namedWindow(windowName, 7);
+                cv::imshow(windowName, matchImg);
+                cout << "Press key to continue to next image" << endl;
+                cv::waitKey(0); // wait for key to be pressed
+            }
+            bVis = false;
         }
 
     } // eof loop over all images
