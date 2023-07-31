@@ -6,3 +6,4 @@ SFND_Lidar_Obstacle_Detection/src/quiz/ransac/build/
 build/*
 **/build
 **/.vscode
+SFND_3D_Object_Tracking/dat/yolo/
