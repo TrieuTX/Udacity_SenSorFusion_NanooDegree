@@ -158,5 +158,80 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev, std::vector<Lidar
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame,
                         DataFrame &currFrame)
 {
-    // ...
+    //match Bounding Box in prev DataFame and curr Datafame
+    int number_bb_prevFrame = prevFrame.boundingBoxes.size();
+    int number_bb_currFrame = currFrame.boundingBoxes.size();
+    int point_count[number_bb_prevFrame][number_bb_currFrame];//count number of points in common between pre_bb and curr_bb
+
+    for (int i = 0; i < number_bb_prevFrame; i++)
+    {
+        for (int j = 0; j < number_bb_currFrame; j++)
+        {
+            point_count[i][j] = 0;
+        }
+    }
+
+    // counting points per bounding box, 
+    for (auto itr = matches.begin(); itr != matches.end(); itr++)
+    {
+        //previous frame
+        cv::KeyPoint query = prevFrame.keypoints[itr->queryIdx];
+        auto queryPoint = cv::Point(query.pt.x, query.pt.y);
+        bool queryPointFound = false;
+
+        //current frame
+        cv::KeyPoint train = currFrame.keypoints[itr->trainIdx];
+        auto trainPoint = cv::Point(train.pt.x, train.pt.y);
+        bool trainPointFound = false;
+
+        std::vector<int> queryId, trainId;
+
+        // if bounding boxes contain matched points then add to vector
+        for (int i = 0; i < number_bb_prevFrame; i++)
+        {
+            if (prevFrame.boundingBoxes[i].roi.contains(queryPoint))
+            {
+                queryPointFound = true;
+                queryId.push_back(i);
+            }
+        }
+
+        for (int i = 0; i < number_bb_currFrame; i++)
+        {
+            if (currFrame.boundingBoxes[i].roi.contains(trainPoint))
+            {
+                trainPointFound = true;
+                trainId.push_back(i);
+            }
+        }
+
+        if (queryPointFound && trainPointFound)
+        {
+            for (auto id_prev : queryId)
+            {
+                for (auto id_curr : trainId)
+                {
+                    point_count[id_prev][id_curr] += 1;
+                }
+            }
+        }
+    }
+
+    // best match for each bounding box
+    for (int i = 0; i < number_bb_prevFrame; i++)
+    {
+        int max_count = 0;
+        int id_max = 0;
+
+        for (int j = 0; j < number_bb_currFrame; j++)
+        {
+            if (point_count[i][j] > max_count)
+            {
+                max_count = point_count[i][j];
+                id_max = j;
+            }
+        }
+          // map Bounding box i in pre Frame with Bounding Box j in curr Frame, they have most number keypoint in common
+        bbBestMatches[i] = id_max;
+    }
 }
