@@ -139,7 +139,30 @@ void show3DObjects(std::vector<BoundingBox> &boundingBoxes, cv::Size worldSize, 
 void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint> &kptsPrev,
                               std::vector<cv::KeyPoint> &kptsCurr, std::vector<cv::DMatch> &kptMatches)
 {
-    // ...
+    std::vector<double> euclideanDistance;
+    for (auto &match : kptMatches)
+    {
+        if (boundingBox.roi.contains(kptsCurr[match.trainIdx].pt))
+        {
+            euclideanDistance.push_back(match.distance); // match.distance = distance between trainIdx and queryIdx
+                                                         // (currKeypoint and preKeypoint)
+        }
+    }
+    double euclideanDistanceMean =
+        std::accumulate(euclideanDistance.begin(), euclideanDistance.end(), 0.0) / euclideanDistance.size();
+    for (auto &match : kptMatches)
+    {
+        if (boundingBox.roi.contains(kptsCurr[match.trainIdx].pt))
+        {
+            double distanceCurrAndPreKeyPt = match.distance;
+            if (distanceCurrAndPreKeyPt <
+                euclideanDistanceMean * 1.2) // remove those that are too far away from the mean, > 1.2*mean
+            {
+                boundingBox.keypoints.push_back(kptsCurr[match.trainIdx]);
+                boundingBox.kptMatches.push_back(match);
+            }
+        }
+    }
 }
 
 // Compute time-to-collision (TTC) based on keypoint correspondences in successive images
