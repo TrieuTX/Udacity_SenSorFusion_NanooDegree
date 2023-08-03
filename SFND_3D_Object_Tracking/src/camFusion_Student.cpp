@@ -144,8 +144,8 @@ void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint
     {
         if (boundingBox.roi.contains(kptsCurr[match.trainIdx].pt))
         {
-            euclideanDistance.push_back(match.distance); // match.distance = distance between trainIdx and queryIdx
-                                                         // (currKeypoint and preKeypoint)
+            euclideanDistance.push_back(cv::norm(kptsCurr[match.trainIdx].pt - kptsPrev[match.queryIdx].pt));
+            // distance = distance between trainIdx and queryIdx (currKeypoint and preKeypoint)
         }
     }
     double euclideanDistanceMean =
@@ -154,7 +154,7 @@ void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint
     {
         if (boundingBox.roi.contains(kptsCurr[match.trainIdx].pt))
         {
-            double distanceCurrAndPreKeyPt = match.distance;
+            double distanceCurrAndPreKeyPt = cv::norm(kptsCurr[match.trainIdx].pt - kptsPrev[match.queryIdx].pt);
             if (distanceCurrAndPreKeyPt <
                 euclideanDistanceMean * 1.2) // remove those that are too far away from the mean, > 1.2*mean
             {
