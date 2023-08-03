@@ -152,16 +152,40 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev, std::vector<LidarPoint> &lidarPointsCurr,
                      double frameRate, double &TTC)
 {
-    // ...
+    // check equation in Section 2 in Engineering a Collision Detection System
+    double dT = 0.1 / frameRate; // time between two measurements
+    double lane_width = 4.0;     // width of the ego lane
+
+    // find closest point in Lidarpoints cloud within ego lane, Point have x smallest value and y within (-2,2)
+    double minXPrev = 1e9, minXCurr = 1e9;
+
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        if (abs(it->y) <= lane_width / 2.0)
+        {
+            minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        }
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        if (abs(it->y) <= lane_width / 2.0)
+        {
+            minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        }
+    }
+    // compute TTC from both measurements
+    TTC = minXCurr * dT / (minXPrev - minXCurr);
 }
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame,
                         DataFrame &currFrame)
 {
-    //match Bounding Box in prev DataFame and curr Datafame
+    // match Bounding Box in prev DataFame and curr Datafame
     int number_bb_prevFrame = prevFrame.boundingBoxes.size();
     int number_bb_currFrame = currFrame.boundingBoxes.size();
-    int point_count[number_bb_prevFrame][number_bb_currFrame];//count number of points in common between pre_bb and curr_bb
+    int point_count[number_bb_prevFrame]
+                   [number_bb_currFrame]; // count number of points in common between pre_bb and curr_bb
 
     for (int i = 0; i < number_bb_prevFrame; i++)
     {
@@ -171,15 +195,15 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
         }
     }
 
-    // counting points per bounding box, 
+    // counting points per bounding box,
     for (auto itr = matches.begin(); itr != matches.end(); itr++)
     {
-        //previous frame
+        // previous frame
         cv::KeyPoint query = prevFrame.keypoints[itr->queryIdx];
         auto queryPoint = cv::Point(query.pt.x, query.pt.y);
         bool queryPointFound = false;
 
-        //current frame
+        // current frame
         cv::KeyPoint train = currFrame.keypoints[itr->trainIdx];
         auto trainPoint = cv::Point(train.pt.x, train.pt.y);
         bool trainPointFound = false;
@@ -231,7 +255,7 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
                 id_max = j;
             }
         }
-          // map Bounding box i in pre Frame with Bounding Box j in curr Frame, they have most number keypoint in common
+        // map Bounding box i in pre Frame with Bounding Box j in curr Frame, they have most number keypoint in common
         bbBestMatches[i] = id_max;
     }
 }
