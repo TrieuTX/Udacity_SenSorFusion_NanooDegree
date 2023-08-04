@@ -221,8 +221,8 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev, std::vector<Lidar
                      double frameRate, double &TTC)
 {
     // check equation in Section 2 in Engineering a Collision Detection System
-    double dT = 0.1 / frameRate; // time between two measurements
-    double lane_width = 4.0;     // width of the ego lane
+    double dT = 1 / frameRate; // time between two measurements
+    double lane_width = 4.0;   // width of the ego lane
 
     // find closest point in Lidarpoints cloud within ego lane, Point have x smallest value and y within (-2,2)
     double minXPrev = 1e9, minXCurr = 1e9;
