@@ -125,7 +125,7 @@ int main(int argc, const char *argv[])
         DataFrame frame;
         frame.cameraImg = img;
         dataBuffer.push_back(frame);
-
+        cout << "Frame: " << imgIndex << endl;
         cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
 
         /* DETECT & CLASSIFY OBJECTS */
@@ -147,7 +147,6 @@ int main(int argc, const char *argv[])
         // remove Lidar points based on distance properties
         float minZ = -1.5, maxZ = -0.9, minX = 2.0, maxX = 20.0, maxY = 2.0, minR = 0.1; // focus on ego lane
         cropLidarPoints(lidarPoints, minX, maxX, maxY, minZ, maxZ, minR);
-
         (dataBuffer.end() - 1)->lidarPoints = lidarPoints;
 
         cout << "#3 : CROP LIDAR POINTS done" << endl;
@@ -159,19 +158,19 @@ int main(int argc, const char *argv[])
             0.10; // shrinks each bounding box by the given percentage to avoid 3D object merging at the edges of an ROI
         clusterLidarWithROI((dataBuffer.end() - 1)->boundingBoxes, (dataBuffer.end() - 1)->lidarPoints, shrinkFactor,
                             P_rect_00, R_rect_00, RT);
-
+        cout << "Number Lidar Point = " << ((dataBuffer.end() - 1)->lidarPoints).size() << endl;
         // Visualize 3D objects
         bVis = true;
         if (bVis)
         {
-            show3DObjects((dataBuffer.end() - 1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(2000, 2000), true);
+            show3DObjects((dataBuffer.end() - 1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(1000, 500), true);
         }
         bVis = false;
 
         cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
 
         // REMOVE THIS LINE BEFORE PROCEEDING WITH THE FINAL PROJECT
-        continue; // skips directly to the next image without processing what comes beneath
+        // continue; // skips directly to the next image without processing what comes beneath
 
         /* DETECT IMAGE KEYPOINTS */
 
@@ -209,7 +208,7 @@ int main(int argc, const char *argv[])
             cv::KeyPointsFilter::retainBest(keypoints, maxKeypoints);
             cout << " NOTE: Keypoints have been limited!" << endl;
         }
-
+        cout << "Number keypoints after Detector = " << keypoints.size() << endl;
         // push keypoints and descriptor for current frame to end of data buffer
         (dataBuffer.end() - 1)->keypoints = keypoints;
 
@@ -221,10 +220,9 @@ int main(int argc, const char *argv[])
         string descriptorType = "BRISK"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors,
                       descriptorType);
-
+        cout << "Number keypoints after EXTRACT KEYPOINT DESCRIPTORS = " << descriptors.size() << endl;
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
-
         cout << "#6 : EXTRACT DESCRIPTORS done" << endl;
 
         if (dataBuffer.size() > 1) // wait until at least two images have been processed
@@ -240,7 +238,7 @@ int main(int argc, const char *argv[])
             matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                              (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors, matches,
                              descriptorType, matcherType, selectorType);
-
+            cout << "Number keypoints after MATCH KEYPOINT DESCRIPTORS = " << matches.size() << endl;
             // store matches in current data frame
             (dataBuffer.end() - 1)->kptMatches = matches;
 
@@ -334,7 +332,9 @@ int main(int argc, const char *argv[])
                 } // eof TTC computation
             }     // eof loop over all BB matches
         }
-
+        cout << "---------------------------------------------------------------------------" << endl;
+        cout << "----------------------------New image--------------------------------------" << endl;
+        cout << "---------------------------------------------------------------------------" << endl;
     } // eof loop over all images
 
     return 0;

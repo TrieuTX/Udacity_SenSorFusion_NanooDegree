@@ -129,10 +129,10 @@ void show3DObjects(std::vector<BoundingBox> &boundingBoxes, cv::Size worldSize, 
     cv::namedWindow(windowName, 1);
     cv::imshow(windowName, topviewImg);
 
-    if (bWait)
-    {
-        cv::waitKey(0); // wait for key to be pressed
-    }
+    // if (bWait)
+    // {
+    //     cv::waitKey(0); // wait for key to be pressed
+    // }
 }
 
 // associate a given bounding box with the keypoints it contains
