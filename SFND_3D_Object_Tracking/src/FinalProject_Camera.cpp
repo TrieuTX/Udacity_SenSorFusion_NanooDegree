@@ -106,7 +106,7 @@ int main(int argc, const char *argv[])
     int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
-
+    vector<string> logData;
     /* MAIN LOOP OVER ALL IMAGES */
 
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex += imgStepWidth)
@@ -180,7 +180,7 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        string detectorType = "SHITOMASI";
+        string detectorType = "FAST";
 
         if (detectorType.compare("SHITOMASI") == 0)
         {
@@ -217,7 +217,7 @@ int main(int argc, const char *argv[])
         /* EXTRACT KEYPOINT DESCRIPTORS */
 
         cv::Mat descriptors;
-        string descriptorType = "BRISK"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
+        string descriptorType = "ORB"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors,
                       descriptorType);
         cout << "Number keypoints after EXTRACT KEYPOINT DESCRIPTORS = " << descriptors.size() << endl;
@@ -231,9 +231,9 @@ int main(int argc, const char *argv[])
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
-            string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
-            string selectorType = "SEL_KNN";      // SEL_NN, SEL_KNN
+            string matcherType = "MAT_BF";   // MAT_BF, MAT_FLANN
+                                             // string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
+            string selectorType = "SEL_KNN"; // SEL_NN, SEL_KNN
 
             matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                              (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors, matches,
@@ -307,7 +307,12 @@ int main(int argc, const char *argv[])
                     computeTTCCamera((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                                      currBB->kptMatches, sensorFrameRate, ttcCamera);
                     //// EOF STUDENT ASSIGNMENT
-
+                    string log = std::to_string(imgIndex) + " |" + "![](PerformanceEvaluation/" + detectorType + "+" +
+                                 descriptorType + "/" + detectorType + "+" + descriptorType + "+FRAME_" +
+                                 std::to_string(imgIndex) + ".png" + " ) | " +
+                                 std::to_string(((dataBuffer.end() - 1)->lidarPoints).size()) + " | " +
+                                 std::to_string(ttcLidar) + " | " + std::to_string(ttcCamera);
+                    logData.push_back(log);
                     bVis = true;
                     if (bVis)
                     {
@@ -335,7 +340,17 @@ int main(int argc, const char *argv[])
         cout << "---------------------------------------------------------------------------" << endl;
         cout << "----------------------------New image--------------------------------------" << endl;
         cout << "---------------------------------------------------------------------------" << endl;
+
     } // eof loop over all images
 
+    cout << "-----------------------Log Data-------------------------" << endl << endl;
+    cout << "Copy and Paste to md File " << endl << endl;
+
+    cout << "Frame | Image | Number Lidar points | TTC Lidar | TTC Camera" << endl;
+    cout << ":---:  | :---:  | :---: | ---:  | ---: " << endl;
+    for (auto &str : logData)
+    {
+        cout << str << endl;
+    }
     return 0;
 }

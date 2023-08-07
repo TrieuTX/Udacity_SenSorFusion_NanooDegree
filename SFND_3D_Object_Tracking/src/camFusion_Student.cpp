@@ -226,12 +226,14 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev, std::vector<Lidar
 
     // find closest point in Lidarpoints cloud within ego lane, Point have x smallest value and y within (-2,2)
     double minXPrev = 1e9, minXCurr = 1e9;
+    double avgCurrX, avgPrevX;
+    std::vector<double> prevX, currX;
 
     for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
     {
         if (abs(it->y) <= lane_width / 2.0)
         {
-            minXPrev = minXPrev > it->x ? it->x : minXPrev;
+            prevX.push_back(it->x);
         }
     }
 
@@ -239,11 +241,21 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev, std::vector<Lidar
     {
         if (abs(it->y) <= lane_width / 2.0)
         {
-            minXCurr = minXCurr > it->x ? it->x : minXCurr;
+            currX.push_back(it->x);
         }
     }
+    if (prevX.size() > 0 && currX.size() > 0)
+    {
+        avgCurrX = std::accumulate(currX.begin(), currX.end(), 0.0) / currX.size();
+        avgPrevX = std::accumulate(prevX.begin(), prevX.end(), 0.0) / prevX.size();
+    }
+    else
+    {
+        TTC = NAN;
+        return;
+    }
     // compute TTC from both measurements
-    TTC = minXCurr * dT / (minXPrev - minXCurr);
+    TTC = avgCurrX * dT / (avgPrevX - avgCurrX);
 }
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame,
