@@ -22,11 +22,29 @@
 
 using namespace std;
 
+struct Datalog
+{
+    int imageIndex;
+    string detectorType;
+    string descriptorType;
+    int numberLidar;
+    double ttcLidar;
+    double ttcCamera;
+    double ttcDiff;
+    Datalog(int _imageIndex, string _detectorType, string _descriptorType, int _numberLidar, double _ttcLidar,
+            double _ttcCamera)
+        : imageIndex(_imageIndex), detectorType(_detectorType), descriptorType(_descriptorType),
+          numberLidar(_numberLidar), ttcLidar(_ttcLidar), ttcCamera(_ttcCamera)
+    {
+        ttcDiff = abs(_ttcCamera - ttcLidar);
+    }
+};
+
 /* MAIN PROGRAM */
 int main(int argc, const char *argv[])
 {
     /* INIT VARIABLES AND DATA STRUCTURES */
-
+    vector<Datalog> logData;
     // data location
     string dataPath = "../";
 
@@ -106,8 +124,10 @@ int main(int argc, const char *argv[])
     int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
-    vector<string> logData;
+
     /* MAIN LOOP OVER ALL IMAGES */
+    std::vector<string> detector = {"SHITOMASI", "HARRIS", "FAST", "BRISK", "ORB", "AKAZE", "SIFT"};
+    std::vector<string> descriptor = {"BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"};
 
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex += imgStepWidth)
     {
@@ -154,8 +174,8 @@ int main(int argc, const char *argv[])
         /* CLUSTER LIDAR POINT CLOUD */
 
         // associate Lidar points with camera-based ROI
-        float shrinkFactor =
-            0.10; // shrinks each bounding box by the given percentage to avoid 3D object merging at the edges of an ROI
+        float shrinkFactor = 0.10; // shrinks each bounding box by the given percentage to avoid 3D object
+                                   // merging at the edges of an ROI
         clusterLidarWithROI((dataBuffer.end() - 1)->boundingBoxes, (dataBuffer.end() - 1)->lidarPoints, shrinkFactor,
                             P_rect_00, R_rect_00, RT);
         cout << "Number Lidar Point = " << ((dataBuffer.end() - 1)->lidarPoints).size() << endl;
@@ -179,7 +199,9 @@ int main(int argc, const char *argv[])
         cv::cvtColor((dataBuffer.end() - 1)->cameraImg, imgGray, cv::COLOR_BGR2GRAY);
 
         // extract 2D keypoints from current image
+
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
+
         string detectorType = "FAST";
 
         if (detectorType.compare("SHITOMASI") == 0)
@@ -217,7 +239,7 @@ int main(int argc, const char *argv[])
         /* EXTRACT KEYPOINT DESCRIPTORS */
 
         cv::Mat descriptors;
-        string descriptorType = "ORB"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
+        string descriptorType = "BRISK"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors,
                       descriptorType);
         cout << "Number keypoints after EXTRACT KEYPOINT DESCRIPTORS = " << descriptors.size() << endl;
@@ -292,27 +314,26 @@ int main(int argc, const char *argv[])
                     prevBB->lidarPoints.size() > 0) // only compute TTC if we have Lidar points
                 {
                     //// STUDENT ASSIGNMENT
-                    //// TASK FP.2 -> compute time-to-collision based on Lidar data (implement -> computeTTCLidar)
+                    //// TASK FP.2 -> compute time-to-collision based on Lidar data (implement ->
+                    /// computeTTCLidar)
                     double ttcLidar;
                     computeTTCLidar(prevBB->lidarPoints, currBB->lidarPoints, sensorFrameRate, ttcLidar);
                     //// EOF STUDENT ASSIGNMENT
 
                     //// STUDENT ASSIGNMENT
                     //// TASK FP.3 -> assign enclosed keypoint matches to bounding box (implement ->
-                    /// clusterKptMatchesWithROI) / TASK FP.4 -> compute time-to-collision based on camera (implement ->
-                    /// computeTTCCamera)
+                    /// clusterKptMatchesWithROI) / TASK FP.4 -> compute time-to-collision based on camera
+                    /// (implement -> computeTTCCamera)
                     double ttcCamera;
                     clusterKptMatchesWithROI(*currBB, (dataBuffer.end() - 2)->keypoints,
                                              (dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->kptMatches);
                     computeTTCCamera((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                                      currBB->kptMatches, sensorFrameRate, ttcCamera);
                     //// EOF STUDENT ASSIGNMENT
-                    string log = std::to_string(imgIndex) + " |" + "![](PerformanceEvaluation/" + detectorType + "+" +
-                                 descriptorType + "/" + detectorType + "+" + descriptorType + "+FRAME_" +
-                                 std::to_string(imgIndex) + ".png" + " ) | " +
-                                 std::to_string(((dataBuffer.end() - 1)->lidarPoints).size()) + " | " +
-                                 std::to_string(ttcLidar) + " | " + std::to_string(ttcCamera);
-                    logData.push_back(log);
+                    Datalog data(imgIndex, detectorType, descriptorType, ((dataBuffer.end() - 1)->lidarPoints).size(),
+                                 ttcLidar, ttcCamera);
+
+                    logData.push_back(data);
                     bVis = true;
                     if (bVis)
                     {
@@ -346,11 +367,23 @@ int main(int argc, const char *argv[])
     cout << "-----------------------Log Data-------------------------" << endl << endl;
     cout << "Copy and Paste to md File " << endl << endl;
 
-    cout << "Frame | Image | Number Lidar points | TTC Lidar | TTC Camera" << endl;
-    cout << ":---:  | :---:  | :---: | ---:  | ---: " << endl;
-    for (auto &str : logData)
+    // cout << "Frame | Image | Number Lidar points | TTC Lidar | TTC Camera | TCC Diff" << endl;
+    // cout << ":---:  | :---:  | :---: | :---:  | :---: | :---:" << endl;
+
+    cout << "Frame | Number Lidar points | TTC Lidar | TTC Camera | TCC Diff" << endl;
+    cout << ":---: | :---: | :---:  | :---: | :---:" << endl;
+    for (auto &log : logData)
     {
+        // string str = std::to_string(log.imageIndex) + " |" + "![](PerformanceEvaluation/" + log.detectorType + "+" +
+        //              log.descriptorType + "/" + log.detectorType + "+" + log.descriptorType + "+FRAME_" +
+        //              std::to_string(log.imageIndex) + ".png" + " ) | " + std::to_string(log.numberLidar) + " | " +
+        //              std::to_string(log.ttcLidar) + " | " + std::to_string(log.ttcCamera) + " | " +
+        //              std::to_string(log.ttcDiff);
+        string str = std::to_string(log.imageIndex) + " | " + std::to_string(log.numberLidar) + " | " +
+                     std::to_string(log.ttcLidar) + " | " + std::to_string(log.ttcCamera) + " | " +
+                     std::to_string(log.ttcDiff);
         cout << str << endl;
     }
+
     return 0;
 }

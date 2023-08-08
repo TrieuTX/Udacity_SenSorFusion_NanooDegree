@@ -216,6 +216,54 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
     double dT = 1 / frameRate;
     TTC = -dT / (1 - medDistRatio);
 }
+// the median distance
+double calculateMedianDistance(std::vector<double> &data)
+{
+    std::sort(data.begin(), data.end());
+    size_t size = data.size();
+
+    if (size % 2 == 0)
+    {
+        size_t middleIndex = size / 2;
+        double medianDistance = (data[middleIndex] + data[middleIndex - 1]) / 2.0;
+        return medianDistance;
+    }
+    else
+    {
+        size_t middleIndex = size / 2;
+        return data[middleIndex];
+    }
+}
+// the standard deviation away (3*sigma rule)
+double calculateMedianDistanceUsingStandardDeviationAway(std::vector<double> &data)
+{
+    // Calulate Mean
+    double sum = 0.0;
+    for (auto &value : data)
+    {
+        sum += value;
+    }
+    double mean = sum / data.size();
+    // Calculate Standard Deviation
+    double sumVariance = 0.0;
+    for (auto &value : data)
+    {
+        sumVariance += pow(value - mean, 2);
+    }
+    double standardDeviation = sqrt(sumVariance / data.size());
+
+    // remove outlines data
+    double threshold = 3.0 * standardDeviation;
+    std::vector<double> dataAfterRemove;
+    for (auto &value : data)
+    {
+        if (abs(value - mean) < threshold)
+        {
+            dataAfterRemove.push_back(value);
+        }
+    }
+    return std::accumulate(dataAfterRemove.begin(), dataAfterRemove.end(), 0.0) / dataAfterRemove.size();
+}
 
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev, std::vector<LidarPoint> &lidarPointsCurr,
                      double frameRate, double &TTC)
@@ -246,8 +294,12 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev, std::vector<Lidar
     }
     if (prevX.size() > 0 && currX.size() > 0)
     {
-        avgCurrX = std::accumulate(currX.begin(), currX.end(), 0.0) / currX.size();
-        avgPrevX = std::accumulate(prevX.begin(), prevX.end(), 0.0) / prevX.size();
+        // avgCurrX = std::accumulate(currX.begin(), currX.end(), 0.0) / currX.size();
+        // avgPrevX = std::accumulate(prevX.begin(), prevX.end(), 0.0) / prevX.size();
+        // avgCurrX = calculateMedianDistance(currX);
+        // avgPrevX = calculateMedianDistance(prevX);
+        avgCurrX = calculateMedianDistanceUsingStandardDeviationAway(currX);
+        avgPrevX = calculateMedianDistanceUsingStandardDeviationAway(prevX);
     }
     else
     {
