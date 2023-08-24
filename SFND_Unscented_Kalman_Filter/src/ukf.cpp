@@ -283,4 +283,85 @@ void UKF::UpdateRadar(MeasurementPackage meas_package)
      * covariance, P_.
      * You can also calculate the radar NIS, if desired.
      */
+    // Step 1: Measurement Prediction
+    // Lesson 25. Measurement Prediction
+    // set measurement dimension, radar can measure r, phi, and r_dot
+    int n_z = 3;
+    // create matrix for sigma points in measurement space
+    MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
+
+    // transform sigma points into measurement space
+    for (int i = 0; i < (2 * n_aug_ + 1); i++)
+    {
+        double p_x = Xsig_pred_(0, i);
+        double p_y = Xsig_pred_(1, i);
+        double v = Xsig_pred_(2, i);
+        double yaw = Xsig_pred_(3, i);
+        double yawd = Xsig_pred_(4, i);
+
+        Zsig(0, i) = sqrt(p_x * p_x + p_y * p_y);                                             // r
+        Zsig(1, i) = atan2(p_y, p_x);                                                         // phi
+        Zsig(2, i) = (p_x * cos(yaw) * v + p_y * sin(yaw) * v) / sqrt(p_x * p_x + p_y * p_y); // r_dot
+    }
+
+    // calculate mean predicted measurement
+    VectorXd z_pred = VectorXd::Zero(n_z);
+    for (int i = 0; i < (2 * n_aug_ + 1); i++)
+    {
+        z_pred = z_pred + Zsig.col(i) * weights_(i);
+    }
+
+    // calculate innovation covariance matrix S
+    MatrixXd S = MatrixXd::Zero(n_z, n_z);
+
+    for (int i = 0; i < 2 * n_aug_ + 1; ++i)
+    {
+        VectorXd z_diff = Zsig.col(i) - z_pred;
+        // angle normalization
+        while (z_diff(1) > M_PI)
+            z_diff(1) -= 2. * M_PI;
+        while (z_diff(1) < -M_PI)
+            z_diff(1) += 2. * M_PI;
+        S = S + weights_(i) * z_diff * z_diff.transpose();
+    }
+
+    MatrixXd R = MatrixXd::Zero(n_z, n_z);
+    R(0, 0) = std_radr_ * std_radr_;
+    R(1, 1) = std_radphi_ * std_radphi_;
+    R(2, 2) = std_radrd_ * std_radrd_;
+    S = S + R;
+
+    // Step 2: Update State
+    // Lesson 28. UKF Update
+    // Cross-correlation Matrix
+    MatrixXd Tc = MatrixXd::Zero(n_x_, n_z);
+    VectorXd z_ = meas_package.raw_measurements_;
+    for (int i = 0; i < 2 * n_aug_ + 1; i++)
+    {
+
+        VectorXd x_diff = Xsig_pred_.col(i) - x_;
+        while (x_diff(3) > M_PI)
+            x_diff(3) -= 2. * M_PI;
+        while (x_diff(3) < -M_PI)
+            x_diff(3) += 2. * M_PI;
+
+        VectorXd z_diff = Zsig.col(i) - z_pred;
+        while (z_diff(1) > M_PI)
+            z_diff(1) -= 2. * M_PI;
+        while (z_diff(1) < -M_PI)
+            z_diff(1) += 2. * M_PI;
+        Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
+    }
+
+    // calculate Kalman gain K;
+    MatrixXd K = Tc * S.inverse();
+
+    VectorXd z_diff = z_ - z_pred;
+    while (z_diff(1) > M_PI)
+        z_diff(1) -= 2.0 * M_PI;
+    while (z_diff(1) < -M_PI)
+        z_diff(1) += 2.0 * M_PI;
+    // State update
+    x_ = x_ + K * z_diff;
+    P_ = P_ - K * S * K.transpose();
 }
