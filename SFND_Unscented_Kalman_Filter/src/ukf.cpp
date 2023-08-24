@@ -58,6 +58,28 @@ UKF::UKF()
 
     // check first measurement
     is_initialized_ = false;
+
+    // state dimension
+    n_x_ = 5;
+
+    // Augmented state dimension
+    n_aug_ = 7;
+
+    // Sigma point spreading paramater
+    lambda_ = 3 - n_x_;
+
+    // predicted sigma points matrix
+    Xsig_pred_ = MatrixXd(5, 2 * n_aug_ + 1);
+    Xsig_pred_.fill(0.0);
+    // create vector for weights
+    weights_ = VectorXd(2 * n_aug_ + 1);
+    double weight_0 = lambda_ / (lambda_ + n_aug_);
+    weights_(0) = weight_0;
+    for (int i = 1; i < 2 * n_aug_ + 1; ++i)
+    {
+        double weight = 0.5 / (n_aug_ + lambda_);
+        weights_(i) = weight;
+    }
 }
 
 UKF::~UKF()
@@ -139,6 +161,108 @@ void UKF::Prediction(double delta_t)
      * Modify the state vector, x_. Predict sigma points, the state,
      * and the state covariance matrix.
      */
+    // Step 1: Generate Sigma Point,equation in Lesson: 13. Generating Sigma Points and 16. UKF Augmentation
+
+    // Augmented mean State
+    VectorXd x_aug_ = VectorXd::Zero(n_aug_);
+    x_aug_.head(5) = x_;
+    x_aug_(5) = 0;
+    x_aug_(6) = 0;
+
+    // Augmented Convariance Matrix
+    MatrixXd P_aug_ = MatrixXd::Zero(7, 7);
+    P_aug_.topLeftCorner(5, 5) = P_;
+    P_aug_(5, 5) = std_a_ * std_a_;
+    P_aug_(6, 6) = std_yawdd_ * std_yawdd_;
+
+    // Square root matrix A
+    MatrixXd A = P_aug_.llt().matrixL();
+
+    // sigma point Matrix with number sigma point = 2*n_aug_ + 1
+    // std::cout << "sigma point Matrix with number sigma point = 2*n_aug_ + 1" << std::endl;
+    MatrixXd Xsig_aug_ = MatrixXd(7, 2 * n_aug_ + 1);
+    Xsig_aug_.col(0) = x_aug_;
+    for (int i = 0; i < n_aug_; i++)
+    {
+        Xsig_aug_.col(i + 1) = x_aug_ + sqrt(lambda_ + n_aug_) * A.col(i);
+        Xsig_aug_.col(i + 1 + n_aug_) = x_aug_ - sqrt(lambda_ + n_aug_) * A.col(i);
+    }
+
+    // Step 2: Predict Sigma Points
+
+    // Lesson 20. Sigma Point Prediction
+
+    // build matrix predicted sigma points matrix Xsig_pred_
+    // std::cout << "build matrix predicted sigma points matrix Xsig_pred_" << std::endl;
+    for (int i = 0; i < 2 * n_aug_ + 1; i++)
+    {
+        double p_x = Xsig_aug_(0, i);
+        double p_y = Xsig_aug_(1, i);
+        double v = Xsig_aug_(2, i);
+        double yaw = Xsig_aug_(3, i);
+        double yawd = Xsig_aug_(4, i);
+        double nu_a = Xsig_aug_(5, i);
+        double nu_yawdd = Xsig_aug_(6, i);
+        // predicted state values
+        double px_p, py_p;
+
+        if (fabs(yawd) > 0.001)
+        {
+            px_p = p_x + v / yawd * (sin(yaw + yawd * delta_t) - sin(yaw));
+            py_p = p_y + v / yawd * (cos(yaw) - cos(yaw + yawd * delta_t));
+        }
+        else
+        {
+            px_p = p_x + v * delta_t * cos(yaw);
+            py_p = p_y + v * delta_t * sin(yaw);
+        }
+
+        double v_p = v;
+        double yaw_p = yaw + yawd * delta_t;
+        double yawd_p = yawd;
+
+        // add noise
+        px_p = px_p + 0.5 * nu_a * delta_t * delta_t * cos(yaw);
+        py_p = py_p + 0.5 * nu_a * delta_t * delta_t * sin(yaw);
+        v_p = v_p + nu_a * delta_t;
+        yaw_p = yaw_p + 0.5 * nu_yawdd * delta_t * delta_t;
+        yawd_p = yawd_p + nu_yawdd * delta_t;
+
+        Xsig_pred_(0, i) = px_p;
+        Xsig_pred_(1, i) = py_p;
+        Xsig_pred_(2, i) = v_p;
+        Xsig_pred_(3, i) = yaw_p;
+        Xsig_pred_(4, i) = yawd_p;
+    }
+
+    // Step 3: Predict Mean and Covariance
+    // Check lesson 22. Predicted Mean and Covariance
+    // vector Weight of sigma point was create in contructor
+
+    // predicted state mean
+
+    // std::cout << "predicted state mean" << std::endl;
+    x_.fill(0.0);
+    for (int i = 0; i < 2 * n_aug_ + 1; i++)
+    {
+        x_ = x_ + weights_(i) * Xsig_pred_.col(i);
+    }
+
+    // predicted state covariance matrix
+    // std::cout << "predicted state covariance matrix" << std::endl;
+    P_.fill(0.0);
+    for (int i = 0; i < 2 * n_aug_ + 1; ++i)
+    { // iterate over sigma points
+        // state difference
+        VectorXd x_diff = Xsig_pred_.col(i) - x_;
+        // angle normalization
+        while (x_diff(3) > M_PI)
+            x_diff(3) -= 2. * M_PI;
+        while (x_diff(3) < -M_PI)
+            x_diff(3) += 2. * M_PI;
+
+        P_ = P_ + weights_(i) * x_diff * x_diff.transpose();
+    }
 }
 
 void UKF::UpdateLidar(MeasurementPackage meas_package)
