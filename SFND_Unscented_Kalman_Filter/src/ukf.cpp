@@ -22,10 +22,10 @@ UKF::UKF()
     P_ = MatrixXd(5, 5);
     x_.fill(0.0);
     // Process noise standard deviation longitudinal acceleration in m/s^2
-    std_a_ = 30;
+    std_a_ = 3;
 
     // Process noise standard deviation yaw acceleration in rad/s^2
-    std_yawdd_ = 30;
+    std_yawdd_ = 3;
 
     /**
      * DO NOT MODIFY measurement noise values below.
